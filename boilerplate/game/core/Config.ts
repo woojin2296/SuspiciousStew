@@ -1,4 +1,3 @@
-
 export const Config = {
   resolution: { width: 320, height: 180 }, // 내부 논리 해상도(픽셀 아트 기준)
   pixelArt: true,
