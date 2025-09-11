@@ -1,0 +1,97 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "GrassBiome.json": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "Water.json": {
+            "scaleInDock": 1,
+            "scaleInEditor": 11
+        },
+        "boilerplate/public/assets/maps/grass.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "boilerplate/public/assets/maps/level1.json": {
+            "scale": 2,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 139,
+                "y": 117.5
+            }
+        },
+        "boilerplate/public/assets/maps/level1.json#Grass": {
+            "scaleInDock": 1
+        },
+        "boilerplate/public/assets/maps/level1.json#GrassBiome": {
+            "scaleInDock": 1
+        },
+        "boilerplate/public/assets/maps/level1.json#Water": {
+            "scaleInDock": 1
+        },
+        "boilerplate/public/assets/maps/level1.json#grass": {
+            "scaleInDock": 1,
+            "scaleInEditor": 11
+        },
+        "grass.json": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "grass.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ground.tmj": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 283.33333333333326,
+                "y": 156.66666666666669
+            }
+        },
+        "level1.json": {
+            "scale": 3.2507812499999997,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 130.4301850516703,
+                "y": 49.21893775534728
+            }
+        }
+    },
+    "last.imagePath": "/Users/im-ujin/Desktop/SuspiciousStew/boilerplate/public/assets/Objects",
+    "map.height": 12,
+    "map.lastUsedFormat": "json",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 20,
+    "openFiles": [
+    ],
+    "project": "Tiled.tiled-project",
+    "recentFiles": [
+        "GrassBiome.json",
+        "boilerplate/public/assets/maps/level1.json",
+        "Water.json",
+        "grass.json",
+        "boilerplate/public/assets/maps/grass.tsx",
+        "level1.json",
+        "grass.tsx",
+        "ground.tmj"
+    ],
+    "tileset.lastUsedFormat": "json",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}
