@@ -111,13 +111,6 @@ export class SettingScene extends Phaser.Scene {
     // Mute toggle & Close
     const btnY = H / 2 + panelH / 2 - 26;
     const btnGap = 100;
-    const mainBtn = this.add.text(W / 2 - btnGap, btnY, "BACK", {
-      fontFamily: "monospace",
-      fontSize: "12px",
-      color: "#ffffff",
-      backgroundColor: "#37474f",
-      padding: { x: 8, y: 4 } as any,
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
     const muteBtn = this.add.text(W / 2, btnY, mutedInit ? "UNMUTE" : "MUTE", {
       fontFamily: "monospace",
@@ -155,24 +148,7 @@ export class SettingScene extends Phaser.Scene {
       closeAndResume();
     });
 
-    // Go to main screen with robust cross-fade that avoids flash of title
-    mainBtn.on(Phaser.Input.Events.POINTER_DOWN, async () => {
-      AudioManager.getInstance(this.game).playSFX("audio.sfx.ui.UiButtonClick");
-      const dur = 450;
-      // 1) Fade out settings camera to black (stays on top)
-      await SceneFlow.fadeOut(this, { duration: dur });
-      // 2) Launch main beneath the black overlay
-      this.scene.launch("main");
-      const next = this.scene.get("main") as Phaser.Scene | undefined;
-      // 3) Fade in main camera while settings stays black on top
-      if (next) {
-        await SceneFlow.fadeIn(next, { duration: Math.max(250, dur - 50) });
-      }
-      // 4) Stop game scene if it was active
-      if (this.scene.isActive("game")) this.scene.stop("game");
-      // 5) Remove settings (black overlay disappears now that main is visible)
-      this.scene.stop();
-    });
+    // (Back button removed)
 
     this.input.keyboard?.on("keydown-ESC", closeAndResume);
   }
