@@ -18,6 +18,7 @@ export default function GamePage() {
       const { SplashScene } = await import("@/game/scenes/SplashScene");
       const { MainScene } = await import("@/game/scenes/MainScene");
       const { SettingScene } = await import("@/game/scenes/SettingScene");
+      const { GameScene } = await import("@/game/scenes/GameScene");
       const { Config } = await import("@/game/core/Config");
 
       if (!mounted) return;
@@ -36,7 +37,7 @@ export default function GamePage() {
           height: Config.resolution.height,
         },
         physics: Config.physics as any,
-        scene: [SplashScene, MainScene, SettingScene],
+        scene: [SplashScene, MainScene, SettingScene, GameScene],
       });
 
       onVis = () => gameRef.current?.loop.sleep(document.hidden);

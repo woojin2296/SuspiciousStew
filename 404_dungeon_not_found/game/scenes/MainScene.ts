@@ -1,26 +1,23 @@
 import * as Phaser from "phaser";
 import { Config } from "@/game/core/Config";
+import { SceneFlow } from "@/game/core/SceneFlow";
+import { AudioManager } from "../core/AudioManager";
 
 export class MainScene extends Phaser.Scene {
-  private bgm?: Phaser.Sound.BaseSound;
   constructor() { super("main"); }
 
-  preload() {
-    this.load.image("ui-title", Config.main.titleImagePath);
-    this.load.image("ui-btn-start", Config.main.startButtonPath);
-    this.load.image("ui-btn-settings", Config.main.settingsButtonPath);
-  }
+  async create() {
+    AudioManager.getInstance(this.game).playBGM("audio.bgm.Main");
 
-  create() {
     const cam = this.cameras.main;
-    cam.setBackgroundColor("#000000");
+    cam.setBackgroundColor("#FFFFFF");
     cam.setRoundPixels(true);
 
     const { width: w, height: h } = this.scale;
 
     let gameTitleObj: Phaser.GameObjects.Image | undefined;
-    if (this.textures.exists("ui-title")) {
-      const img = this.add.image(w * 0.5, h * 0.3, "ui-title").setOrigin(0.5).setScrollFactor(0);
+    if (this.textures.exists("ui.GameTitle")) {
+      const img = this.add.image(w * 0.5, h * 0.4, "ui.GameTitle").setOrigin(0.5);
       const maxW = Math.min(
         Config.resolution.width * (Config.main.titleMaxWidthRatio ?? 0.6),
         Config.main.titleMaxWidthCap ?? 256
@@ -32,9 +29,11 @@ export class MainScene extends Phaser.Scene {
       gameTitleObj = img;
     }
 
+    const menuGroup = this.add.container(w * 0.5, h * 0.5);
+
     let startButtonObj: Phaser.GameObjects.Image | undefined;
-    if (this.textures.exists("ui-btn-start")) {
-      const btn = this.add.image(w * 0.5, h * 0.65, "ui-btn-start").setOrigin(0.5).setScrollFactor(0).setInteractive({ useHandCursor: true }).setAlpha(0);
+    if (this.textures.exists("ui.StartButton")) {
+      const btn = this.add.image(0, h * 0.2, "ui.StartButton").setOrigin(0.5).setInteractive({ useHandCursor: true });
       const maxW = Math.min(
         Config.resolution.width * (Config.main.buttonMaxWidthRatio ?? 0.4),
         Config.main.buttonMaxWidthCap ?? 280
@@ -43,6 +42,7 @@ export class MainScene extends Phaser.Scene {
         const ratio = btn.height / btn.width;
         btn.setDisplaySize(maxW, Math.round(maxW * ratio));
       }
+      menuGroup.add(btn);
       startButtonObj = btn;
 
       const hoverTint = Config.main.hoverTint ?? 0xffffaa;
@@ -63,11 +63,16 @@ export class MainScene extends Phaser.Scene {
           ease: "Sine.easeOut"
         });
       });
+
+      btn.on(Phaser.Input.Events.POINTER_DOWN, () => {
+        AudioManager.getInstance(this.game).playSFX("audio.sfx.ui.StartButtonClick");
+        SceneFlow.startWithFade(this, "game", { duration: 500 });
+      });
     }
 
     let settingButtonObj: Phaser.GameObjects.Image | undefined;
-    if (this.textures.exists("ui-btn-settings")) {
-      const btn = this.add.image(w * 0.5, h * 0.85, "ui-btn-settings").setAlpha(0).setOrigin(0.5).setScrollFactor(0).setInteractive({ useHandCursor: true });
+    if (this.textures.exists("ui.SettingsButton")) {
+      const btn = this.add.image(0, h * 0.35, "ui.SettingsButton").setOrigin(0.5).setInteractive({ useHandCursor: true });
       const maxW = Math.min(
         Config.resolution.width * (Config.main.buttonMaxWidthRatio ?? 0.4),
         Config.main.buttonMaxWidthCap ?? 280
@@ -76,6 +81,7 @@ export class MainScene extends Phaser.Scene {
         const ratio = btn.height / btn.width;
         btn.setDisplaySize(maxW, Math.round(maxW * ratio));
       }
+      menuGroup.add(btn);
       settingButtonObj = btn;
 
       const hoverTint = Config.main.hoverTint ?? 0xffffaa;
@@ -96,66 +102,19 @@ export class MainScene extends Phaser.Scene {
           ease: "Sine.easeOut"
         });
       });
+
+      btn.on(Phaser.Input.Events.POINTER_DOWN, () => {
+        this.scene.launch("settings");
+      });
     }
 
-    const gameStartText = this.add.text(w * 0.5, h * 0.85, "Click to Start", {
-      fontFamily: "monospace",
-      fontSize: "16px",
-      color: "#FFFFFF",
-    }).setOrigin(0.5);
-
+    menuGroup.setAlpha(0);
+    await new Promise((r) => setTimeout(r, 300));
     this.tweens.add({
-      targets: gameStartText,
-      alpha: 0,
-      duration: 1000,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.easeInOut"
+      targets: menuGroup,
+      alpha: 1,
+      duration: 500,
+      ease: "Sine.easeOut"
     });
-
-    if (this.cache.audio.exists("main-bgm")) {
-      this.bgm = this.sound.add("main-bgm", { loop: true, volume: 0.6 });
-    }
-
-    const start = () => {
-      if (this.sound.locked) this.sound.context.resume().catch(() => { });
-
-      const main = this.scene.get("main") as Phaser.Scene;
-      main?.events.emit("ui:start");
-
-      this.tweens.add({
-        targets: gameStartText, 
-        alpha: 0,
-        duration: 200,
-        onComplete: () => gameStartText.destroy(),
-      });
-
-      this.tweens.add({
-        targets: [startButtonObj, settingButtonObj],
-        alpha: 1,
-        duration: 200,
-      });
-
-      if (this.bgm && !this.bgm.isPlaying) {
-        this.bgm.play();
-      }
-
-      this.input.off("pointerdown", start);
-      this.input.keyboard?.off("keydown", start as any);
-      window.removeEventListener("click", onDom);
-      window.removeEventListener("touchstart", onDom);
-      window.removeEventListener("keydown", onDom);
-    };
-
-    const onDom = () => start();
-    this.input.once("pointerdown", start);
-    this.input.keyboard?.once("keydown", start);
-    window.addEventListener("click", onDom, { passive: true });
-    window.addEventListener("touchstart", onDom, { passive: true });
-    window.addEventListener("keydown", onDom, { passive: true });
-  }
-
-  shutdown() {
-
   }
 }

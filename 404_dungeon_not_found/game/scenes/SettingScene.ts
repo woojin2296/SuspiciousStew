@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
-import { Audio } from "@/game/core/Audio";
 import { Config } from "@/game/core/Config";
+import { SceneFlow } from "@/game/core/SceneFlow";
+import { AudioManager } from "@/game/core/AudioManager";
 
 type Slider = {
   container: Phaser.GameObjects.Container;
@@ -14,19 +15,27 @@ export class SettingScene extends Phaser.Scene {
   }
 
   create() {
-    // Ensure Audio is initialized (in case this scene opens first in future)
-    Audio.I().init(this);
+    // Read from AudioManager
+    const audio = AudioManager.getInstance(this.game as Phaser.Game);
+    const masterInit = audio.getMasterVolume();
+    const bgmInit = audio.getBGMVolume();
+    const sfxInit = audio.getSFXVolume();
+    const mutedInit = audio.isMuted();
+    this.sound.volume = masterInit;
+    this.sound.mute = mutedInit;
 
     const { width: W, height: H } = this.scale;
-    const panelW = Math.min(W * 0.88, 420);
-    const panelH = Math.min(H * 0.88, 320);
+    const panelW = Math.min(W * 0.90, 420);
+    const panelH = Math.min(H * 0.90, 320);
 
     const panel = this.add.graphics();
-    panel.fillStyle(0x0f1115, 0.96);
-    Phaser.Geom.Rectangle.CenterOn(panel.fillRect(0, 0, panelW, panelH).getBounds(), W / 2, H / 2);
-    panel.lineStyle(2, 0x2a3140, 1).strokeRoundedRect(W / 2 - panelW / 2, H / 2 - panelH / 2, panelW, panelH, 8);
+    panel.fillStyle(0x0f1115);
+    const panelX = W / 2 - panelW / 2;
+    const panelY = H / 2 - panelH / 2;
+    panel.fillRoundedRect(panelX, panelY, panelW, panelH, 8);
+    panel.lineStyle(2, 0x2a3140, 1).strokeRoundedRect(panelX, panelY, panelW, panelH, 8);
 
-    const title = this.add.text(W / 2, H / 2 - panelH / 2 + 24, "설정", {
+    const title = this.add.text(W / 2, H / 2 - panelH / 2 + 24, "Setting", {
       fontFamily: "monospace",
       fontSize: "18px",
       color: "#ffffff",
@@ -45,16 +54,14 @@ export class SettingScene extends Phaser.Scene {
       const track = this.add.rectangle(x, yy, w, 8, 0x233042).setOrigin(0, 0.5).setInteractive();
       const fill = this.add.rectangle(x, yy, w * init, 8, 0x4cc3ff).setOrigin(0, 0.5);
       const handle = this.add.circle(x + w * init, yy, 8, 0xb3e5ff).setInteractive({ draggable: true, useHandCursor: true });
-      const valueText = this.add.text(x + w + 8, yy, `${Math.round(init * 100)}%`, { fontFamily: "monospace", fontSize: "12px", color: "#a7b6c2" }).setOrigin(0, 0.5);
-
-      cont.add([track, fill, handle, valueText]);
+      
+      cont.add([track, fill, handle]);
 
       const clamp = (v: number) => Math.max(0, Math.min(1, v));
       const apply = (v: number) => {
         const nx = x + w * v;
         fill.width = Math.max(1, w * v);
         handle.x = nx;
-        valueText.setText(`${Math.round(v * 100)}%`);
       };
 
       const set = (v: number) => {
@@ -78,22 +85,41 @@ export class SettingScene extends Phaser.Scene {
       return { container: cont, set, get: () => (handle.x - x) / w };
     };
 
-    // Master slider
-    makeLabel("마스터 볼륨", y);
-    const sMaster = makeSlider(left, y, trackW, Audio.I().masterVolume, (v) => Audio.I().setMasterVolume(v));
+    // Master slider → this.sound.volume + persist
+    makeLabel("Master", y);
+    const sMaster = makeSlider(left, y, trackW, masterInit, (v) => {
+      this.sound.volume = v;
+      audio.setMasterVolume(v);
+    });
     y += gap;
 
-    // BGM slider
-    makeLabel("배경음악(BGM)", y);
-    const sBgm = makeSlider(left, y, trackW, Audio.I().bgmVolume, (v) => Audio.I().setBgmVolume(v));
+    // BGM slider → adjust current bgm if exists + persist
+    makeLabel("BGM", y);
+    const sBgm = makeSlider(left, y, trackW, bgmInit, (v) => {
+      audio.setBGMVolume(v);
+      const bgm = this.sound.get("bgm.main") as Phaser.Sound.BaseSound | null;
+      if (bgm) bgm.setVolume(audio.isMuted() ? 0 : audio.getMasterVolume() * v);
+    });
     y += gap;
 
-    // SFX slider
-    makeLabel("효과음(SFX)", y);
-    const sSfx = makeSlider(left, y, trackW, Audio.I().sfxVolume, (v) => Audio.I().setSfxVolume(v));
+    // SFX slider → persist only, applied on play
+    makeLabel("SFX", y);
+    const sSfx = makeSlider(left, y, trackW, sfxInit, (v) => {
+      audio.setSFXVolume(v);
+    });
 
     // Mute toggle & Close
-    const muteBtn = this.add.text(W / 2 - 60, H / 2 + panelH / 2 - 26, Audio.I().muted ? "음소거 해제" : "음소거", {
+    const btnY = H / 2 + panelH / 2 - 26;
+    const btnGap = 100;
+    const mainBtn = this.add.text(W / 2 - btnGap, btnY, "BACK", {
+      fontFamily: "monospace",
+      fontSize: "12px",
+      color: "#ffffff",
+      backgroundColor: "#37474f",
+      padding: { x: 8, y: 4 } as any,
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    const muteBtn = this.add.text(W / 2, btnY, mutedInit ? "UNMUTE" : "MUTE", {
       fontFamily: "monospace",
       fontSize: "12px",
       color: "#ffffff",
@@ -102,11 +128,14 @@ export class SettingScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
     muteBtn.on(Phaser.Input.Events.POINTER_DOWN, () => {
-      Audio.I().toggleMute();
-      muteBtn.setText(Audio.I().muted ? "음소거 해제" : "음소거");
+      AudioManager.getInstance(this.game).playSFX("audio.sfx.ui.UiButtonClick");
+      const next = !audio.isMuted();
+      audio.setMuted(next);
+      this.sound.mute = next;
+      muteBtn.setText(next ? "UNMUTE" : "MUTE");
     });
 
-    const closeBtn = this.add.text(W / 2 + 60, H / 2 + panelH / 2 - 26, "닫기", {
+    const closeBtn = this.add.text(W / 2 + btnGap, btnY, "CLOSE", {
       fontFamily: "monospace",
       fontSize: "12px",
       color: "#ffffff",
@@ -114,11 +143,37 @@ export class SettingScene extends Phaser.Scene {
       padding: { x: 8, y: 4 } as any,
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
+    const closeAndResume = () => {
+      // Resume game scene if paused
+      const game = this.scene.get("game");
+      if (game && this.scene.isPaused("game")) this.scene.resume("game");
+      this.scene.stop();
+    };
+
     closeBtn.on(Phaser.Input.Events.POINTER_DOWN, () => {
+      AudioManager.getInstance(this.game).playSFX("audio.sfx.ui.UiButtonClick");
+      closeAndResume();
+    });
+
+    // Go to main screen with robust cross-fade that avoids flash of title
+    mainBtn.on(Phaser.Input.Events.POINTER_DOWN, async () => {
+      AudioManager.getInstance(this.game).playSFX("audio.sfx.ui.UiButtonClick");
+      const dur = 450;
+      // 1) Fade out settings camera to black (stays on top)
+      await SceneFlow.fadeOut(this, { duration: dur });
+      // 2) Launch main beneath the black overlay
+      this.scene.launch("main");
+      const next = this.scene.get("main") as Phaser.Scene | undefined;
+      // 3) Fade in main camera while settings stays black on top
+      if (next) {
+        await SceneFlow.fadeIn(next, { duration: Math.max(250, dur - 50) });
+      }
+      // 4) Stop game scene if it was active
+      if (this.scene.isActive("game")) this.scene.stop("game");
+      // 5) Remove settings (black overlay disappears now that main is visible)
       this.scene.stop();
     });
 
-    this.input.keyboard?.on("keydown-ESC", () => this.scene.stop());
+    this.input.keyboard?.on("keydown-ESC", closeAndResume);
   }
 }
-

@@ -6,21 +6,9 @@ export const Config = {
     arcade: { gravity: { y: 0 }, debug: false },
   },
 
-  audio : {
-    bgmMainPath: "/audio/bgm/main-bgm.ogg",
-
-    sfxPlayerMovePath: "/audio/sfx/entity/player-move.mp3",
-    sfxSlimeMovePath:  "/audio/sfx/entity/slime-move.mp3",
-
-    sfxStartBtnPath:  "/audio/sfx/ui/start-btn.mp3",
-    sfxUiBtnPath: "/audio/sfx/ui/ui-btn.mp3",
-  },
-
   splash: {
     bgColor: "#FFFFFF",
     showDelayStartMs: 800,
-
-    bgmPath: "/audio/bgm/main-bgm.mp3",
 
     logoPath: "/ui/splash/studio-logo.png",
     logoMaxWidthRatio: 0.6,
@@ -45,7 +33,6 @@ export const Config = {
     titleImagePath: "/ui/main/game-title.jpg",
     titleMaxWidthRatio: 0.7,
     titleMaxWidthCap: 360,
-    titleYRatio: 0.28,
 
     startButtonPath: "/ui/main/btn-start.png",
     settingsButtonPath: "/ui/main/btn-setting.png",
@@ -53,7 +40,6 @@ export const Config = {
     buttonMaxWidthCap: 280,
 
     // Hover feedback
-    hoverScale: 1.08,
     hoverTint: 0xffffaa,
   },
 };
