@@ -19,6 +19,15 @@ export default function GamePage() {
       const { MainScene } = await import("@/game/scenes/MainScene");
       const { SettingScene } = await import("@/game/scenes/SettingScene");
       const { GameScene } = await import("@/game/scenes/GameScene");
+
+      const { StageUiScene } = await import("@/game/stage/StageUi");
+      const { PatchnoteUiScene } = await import("@/game/stage/PatchNoteUi");
+      const { Stage1 } = await import("@/game/stage/Stage1");
+      const { Stage2 } = await import("@/game/stage/Stage2");
+      const { Stage3 } = await import("@/game/stage/Stage3");
+      const { Stage4 } = await import("@/game/stage/Stage4");
+      const { Stage5 } = await import("@/game/stage/Stage5");
+
       const { Config } = await import("@/game/core/Config");
 
       if (!mounted) return;
@@ -26,7 +35,7 @@ export default function GamePage() {
       gameRef.current = new Phaser.Game({
         type: Phaser.AUTO,
         parent: hostRef.current!,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#0b0b53",
         pixelArt: Config.pixelArt,
         antialias: false,
         roundPixels: true,
@@ -37,10 +46,19 @@ export default function GamePage() {
           height: Config.resolution.height,
         },
         physics: Config.physics as any,
-        scene: [SplashScene, MainScene, SettingScene, GameScene],
+        scene: [ GameScene, Stage1, Stage2, Stage3, Stage4, Stage5, MainScene, SettingScene, SplashScene, StageUiScene, PatchnoteUiScene ],
       });
 
-      onVis = () => gameRef.current?.loop.sleep(document.hidden);
+      onVis = () => {
+        const g = gameRef.current;
+        if (!g) return;
+        if (document.hidden) {
+          g.loop.sleep();
+        } else {
+          g.loop.wake();
+        }
+      };
+      
       document.addEventListener("visibilitychange", onVis);
     })();
 

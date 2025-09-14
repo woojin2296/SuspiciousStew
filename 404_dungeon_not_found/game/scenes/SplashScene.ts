@@ -8,23 +8,43 @@ export class SplashScene extends Phaser.Scene {
   constructor() { super("splash"); }
 
   preload() {
-    this.load.image("ui.StudioLogo", "/ui/StudioLogo.png");
-    this.load.image("ui.StudioTitle", "/ui/StudioTitle.png");
-    this.load.image("ui.GameTitle", "/ui/GameTitle.jpg");
-    this.load.image("ui.StartButton", "/ui/StartButton.png");
-    this.load.image("ui.SettingsButton", "/ui/SettingButton.png");
+    if (!this.textures.exists("ui.font")) {
+      this.load.bitmapFont("ui.font", "/font/font.png", "/font/font.fnt");
+    }
 
-    this.load.audio("audio.bgm.Main", "/audio/bgm/Main.ogg");
-    this.load.audio("audio.sfx.ui.StartButtonClick", "/audio/sfx/ui/StartButtonClick.mp3");
-    this.load.audio("audio.sfx.ui.UiButtonClick", "/audio/sfx/ui/UiButtonClick.mp3");
+    if (!this.textures.exists("ui.StudioLogo")) {
+      this.load.image("ui.StudioLogo", "/ui/StudioLogo.png");
+    }
+    if (!this.textures.exists("ui.StudioTitle")) {
+      this.load.image("ui.StudioTitle", "/ui/StudioTitle.png");
+    }
+    if (!this.textures.exists("ui.GameTitle")) {
+      this.load.image("ui.GameTitle", "/ui/GameTitle.png");
+    }
+    if (!this.textures.exists("ui.StartButton")) {
+      this.load.image("ui.StartButton", "/ui/StartButton.png");
+    }
+    if (!this.textures.exists("ui.SettingsButton")) {
+      this.load.image("ui.SettingsButton", "/ui/SettingButton.png");
+    }
+    if (!this.textures.exists("ui.MainWindow")) {
+      this.load.image("ui.MainWindow", "/ui/MainWindow.png");
+    }
 
-    this.load.image("tiles.grass", "/map/Grass.png");
-    this.load.tilemapTiledJSON("map.testlevel", "/map/testlevel.json");
+    if (!this.textures.exists("audio.bgm.Main")) {
+      this.load.audio("audio.bgm.Main", "/audio/bgm/Main.ogg");
+    }
+    if (!this.textures.exists("audio.sfx.ui.StartButtonClick")) {
+      this.load.audio("audio.sfx.ui.StartButtonClick", "/audio/sfx/ui/StartButtonClick.mp3");
+    }
+    if (!this.textures.exists("audio.sfx.ui.UiButtonClick")) {
+      this.load.audio("audio.sfx.ui.UiButtonClick", "/audio/sfx/ui/UiButtonClick.mp3");
+    }
   }
 
   async create() {
     const cam = this.cameras.main;
-    cam.setBackgroundColor(Config.splash.bgColor);
+    cam.setBackgroundColor("#FFFFFF");
     cam.setRoundPixels(true);
 
     const { width: w, height: h } = this.scale;
@@ -67,25 +87,27 @@ export class SplashScene extends Phaser.Scene {
 
     let gameTitleObj: Phaser.GameObjects.Image | undefined;
     if (this.textures.exists("ui.GameTitle")) {
-      const img = this.add.image(0, -h * 0.1, "ui.GameTitle").setOrigin(0.5);
-      const maxW = Math.min(
-        Config.resolution.width * (Config.main.titleMaxWidthRatio ?? 0.6),
-        Config.main.titleMaxWidthCap ?? 256
-      );
-      if (img.width > 0 && img.width > maxW) {
-        const ratio = img.height / img.width;
-        img.setDisplaySize(maxW, Math.round(maxW * ratio));
-      }
+      const img = this.add.image(0, -h * 0.5 + 50, "ui.GameTitle").setOrigin(0.5, 0);
       gameTitleGroup.add(img);
       gameTitleObj = img;
     }
 
-    let gameStartText: Phaser.GameObjects.Text | undefined;
+    let gameStartText: Phaser.GameObjects.BitmapText | undefined;
     if (true) {
-      const text = this.add.text(0, h * 0.4, "Click to Start", { fontFamily: "monospace", fontSize: "16px", color: "#888888" }).setOrigin(0.5);
+      const text = this.add.bitmapText(0, h * 0.5 - 50, "ui.font", "CLICK TO START", 6).setOrigin(0.5, 1);
+      text.setTintFill(0xffffff);
+      text.setLetterSpacing(8);
       gameTitleGroup.add(text);
       gameStartText = text;
     }
+
+    let mainWindowObj: Phaser.GameObjects.Image | undefined;
+    if (this.textures.exists("ui.MainWindow")) {
+      const img = this.add.image(w * -0.5, h * -0.5, "ui.MainWindow").setOrigin(0);
+      gameTitleGroup.add(img);
+      mainWindowObj = img;
+    }
+
     gameTitleGroup.setAlpha(0);
 
     const spacing = Config.splash.spacing ?? 12;
@@ -144,6 +166,7 @@ export class SplashScene extends Phaser.Scene {
     await new Promise((r) => setTimeout(r, 1000));
 
     await SceneFlow.fadeOut(this, { duration: 500 });
+    cam.setBackgroundColor("#0b0b53");
     studioGroup.destroy();
     gameTitleGroup.setAlpha(1);
     await SceneFlow.fadeIn(this, { duration: 500 });

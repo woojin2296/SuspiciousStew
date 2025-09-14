@@ -15,7 +15,6 @@ export class SettingScene extends Phaser.Scene {
   }
 
   create() {
-    // Read from AudioManager
     const audio = AudioManager.getInstance(this.game as Phaser.Game);
     const masterInit = audio.getMasterVolume();
     const bgmInit = audio.getBGMVolume();

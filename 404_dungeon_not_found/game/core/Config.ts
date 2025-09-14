@@ -1,5 +1,5 @@
 export const Config = {
-  resolution: { width: 640, height: 360 }, // 내부 논리 해상도(픽셀 아트 기준)
+  resolution: { width: 320, height: 256 }, // 내부 논리 해상도(픽셀 아트 기준)
   pixelArt: true,
   physics: {
     default: "arcade" as const,

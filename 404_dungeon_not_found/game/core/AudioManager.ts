@@ -76,7 +76,6 @@ export class AudioManager {
     this.updateVolumes();
   }
 
-  // --- Getters for UI ---
   public getMasterVolume() { return this.masterVolume; }
   public getBGMVolume() { return this.bgmVolume; }
   public getSFXVolume() { return this.sfxVolume; }
