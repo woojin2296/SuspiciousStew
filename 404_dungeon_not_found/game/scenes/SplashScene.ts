@@ -30,6 +30,9 @@ export class SplashScene extends Phaser.Scene {
     if (!this.textures.exists("ui.MainWindow")) {
       this.load.image("ui.MainWindow", "/ui/MainWindow.png");
     }
+    if (!this.textures.exists("ui.ClickToStartText")) {
+      this.load.image("ui.ClickToStartText", "/ui/ClickToStartText.png");
+    }
 
     if (!this.textures.exists("audio.bgm.Main")) {
       this.load.audio("audio.bgm.Main", "/audio/bgm/Main.ogg");
@@ -40,6 +43,7 @@ export class SplashScene extends Phaser.Scene {
     if (!this.textures.exists("audio.sfx.ui.UiButtonClick")) {
       this.load.audio("audio.sfx.ui.UiButtonClick", "/audio/sfx/ui/UiButtonClick.mp3");
     }
+    
   }
 
   async create() {
@@ -92,13 +96,11 @@ export class SplashScene extends Phaser.Scene {
       gameTitleObj = img;
     }
 
-    let gameStartText: Phaser.GameObjects.BitmapText | undefined;
+    let gameStartTextObj: Phaser.GameObjects.Image | undefined;
     if (true) {
-      const text = this.add.bitmapText(0, h * 0.5 - 50, "ui.font", "CLICK TO START", 6).setOrigin(0.5, 1);
-      text.setTintFill(0xffffff);
-      text.setLetterSpacing(8);
-      gameTitleGroup.add(text);
-      gameStartText = text;
+      const img = this.add.image(0, h * 0.5 - 60, "ui.ClickToStartText").setOrigin(0.5, 1).setTintFill(0xffffff);
+      gameTitleGroup.add(img);
+      gameStartTextObj = img;
     }
 
     let mainWindowObj: Phaser.GameObjects.Image | undefined;
@@ -172,7 +174,7 @@ export class SplashScene extends Phaser.Scene {
     await SceneFlow.fadeIn(this, { duration: 500 });
 
     const blink = this.tweens.add({
-      targets: gameStartText,
+      targets: gameStartTextObj,
       alpha: 0,
       duration: 500,
       ease: "Sine.easeInOut",
@@ -184,9 +186,9 @@ export class SplashScene extends Phaser.Scene {
       AudioManager.getInstance(this.game).playSFX("audio.sfx.ui.StartButtonClick");
       this.input.enabled = false;
       blink.stop();
-      gameStartText?.setAlpha(1);
+      gameStartTextObj?.setAlpha(1);
       this.tweens.add({
-        targets: gameStartText,
+        targets: gameStartTextObj,
         alpha: 0,
         duration: 100,
         yoyo: true,

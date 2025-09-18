@@ -26,7 +26,8 @@ export default function GamePage() {
       const { Stage2 } = await import("@/game/stage/Stage2");
       const { Stage3 } = await import("@/game/stage/Stage3");
       const { Stage4 } = await import("@/game/stage/Stage4");
-      const { Stage5 } = await import("@/game/stage/Stage5");
+      const { Stage6 } = await import("@/game/stage/Stage6");
+      const { Stage8 } = await import("@/game/stage/Stage8");
 
       const { Config } = await import("@/game/core/Config");
 
@@ -46,7 +47,11 @@ export default function GamePage() {
           height: Config.resolution.height,
         },
         physics: Config.physics as any,
-        scene: [ GameScene, Stage1, Stage2, Stage3, Stage4, Stage5, MainScene, SettingScene, SplashScene, StageUiScene, PatchnoteUiScene ],
+        // 기존 스테이지(2,3,4,6) 중심 + Stage8 유지
+        scene: [
+          SplashScene, MainScene, GameScene, SettingScene, StageUiScene, PatchnoteUiScene,
+          Stage1, Stage2, Stage3, Stage4, Stage6, Stage8
+        ],
       });
 
       onVis = () => {

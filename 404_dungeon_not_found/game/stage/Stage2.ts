@@ -18,6 +18,10 @@ export class Stage2 extends Phaser.Scene {
 
   preload() {
     this.load.tilemapTiledJSON("map.level2", "/map/level2.json");
+    // for bridge visual overlay
+    if (!this.textures.exists("texture.TileSet.sprite")) {
+      this.load.spritesheet("texture.TileSet.sprite", "/texture/TileSet.png", { frameWidth: 16, frameHeight: 16 });
+    }
   }
 
   create() {
@@ -63,14 +67,22 @@ export class Stage2 extends Phaser.Scene {
 
     const eventBus = (this.scene.get("game") as GameScene).eventBus;
     const gameEventBus = (this.scene.get("game") as GameScene).gameEventBus;
+    const isVoid = (col: number, row: number) => { return this.searchLayer(col, row).includes("void"); }
+
+    // Bridge state (single-use floor)
+    const bridge = { col: 10, row: 7, destroyed: false };
+    let wasOnBridge = false;
+    let bridgeImage: Phaser.GameObjects.Image | undefined;
+    // draw bridge overlay
+    bridgeImage = this.add.image(16 * bridge.col, 16 * bridge.row, "texture.TileSet.sprite", 151).setOrigin(0).setDepth(5000);
 
     this.input.keyboard?.addCapture(["UP", "DOWN", "LEFT", "RIGHT"]);
-    this.input.keyboard?.on("keydown-LEFT", () => gameEventBus.emit("gmae:input", "left"));
-    this.input.keyboard?.on("keydown-RIGHT", () => gameEventBus.emit("gmae:input", "right"));
-    this.input.keyboard?.on("keydown-UP", () => gameEventBus.emit("gmae:input", "up"));
-    this.input.keyboard?.on("keydown-DOWN", () => gameEventBus.emit("gmae:input", "down"));
+    this.input.keyboard?.on("keydown-LEFT", () => gameEventBus.emit("game:input", "left"));
+    this.input.keyboard?.on("keydown-RIGHT", () => gameEventBus.emit("game:input", "right"));
+    this.input.keyboard?.on("keydown-UP", () => gameEventBus.emit("game:input", "up"));
+    this.input.keyboard?.on("keydown-DOWN", () => gameEventBus.emit("game:input", "down"));
 
-    gameEventBus.on("gmae:input", (key: "left" | "right" | "up" | "down") => {
+    gameEventBus.on("game:input", (key: "left" | "right" | "up" | "down") => {
       if (this.isMoving) return; this.isMoving = true;
 
       const { dc, dr } = { left: { dc: -1, dr: 0 }, right: { dc: 1, dr: 0 }, up: { dc: 0, dr: -1 }, down: { dc: 0, dr: 1 } }[key];
@@ -158,6 +170,24 @@ export class Stage2 extends Phaser.Scene {
         await this.entitys.player.obj?.moveTo({ col: nx, row: ny });
         this.entitys.player.pos = { col: nx, row: ny };
       }
+
+      // Bridge + void handling (process after player moved)
+      const px = this.entitys.player.pos.col;
+      const py = this.entitys.player.pos.row;
+      const onBridgeNow = !bridge.destroyed && px === bridge.col && py === bridge.row;
+      // If standing on void and not on an intact bridge, game over
+      if (isVoid(px, py) && !onBridgeNow) {
+        eventBus.emit("game:over");
+      }
+      // Break bridge after leaving it
+      if (!onBridgeNow && wasOnBridge && !bridge.destroyed) {
+        bridge.destroyed = true;
+        bridgeImage?.setFrame(0);
+        // play sfx if available via eventBus in GameScene
+        eventBus.emit("sfx:bridge");
+      }
+      wasOnBridge = onBridgeNow;
+
       this.isMoving = false;
     });
 
@@ -165,6 +195,8 @@ export class Stage2 extends Phaser.Scene {
       this.gameSetting.HAS_KEY = true;
       this.entitys.door.obj?.open();
     });
+
+    // Stage2: patchnote UI disabled (do nothing on note:open)
   }
 
   private searchLayer(col: number, row: number) {

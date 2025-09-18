@@ -84,7 +84,10 @@ export class AudioManager {
   private updateVolumes() {
     const bgm = this.game.sound.get(this.currentBGMKey || "");
     if (bgm) {
-      bgm.setVolume(this.muted ? 0 : this.masterVolume * this.bgmVolume);
+      const v = this.muted ? 0 : this.masterVolume * this.bgmVolume;
+      const anySound: any = bgm as any;
+      if (typeof anySound.setVolume === "function") anySound.setVolume(v);
+      else anySound.volume = v;
     }
   }
 }

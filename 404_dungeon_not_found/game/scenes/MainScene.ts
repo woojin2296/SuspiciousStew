@@ -1,5 +1,4 @@
 import * as Phaser from "phaser";
-import { Config } from "@/game/core/Config";
 import { SceneFlow } from "@/game/core/SceneFlow";
 import { AudioManager } from "../core/AudioManager";
 
